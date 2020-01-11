@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>获取网页元素相对于屏幕的位置测试</title>
+<head>
+<style>
+.dragdiv {
+    position:fixed;
+    width:200px;
+    height:200px;
+    background-color:red;
+    filter:Alpha(opacity=50);
+    opacity:0.5;
+    cursor:move;
+    text-align: center;
+    line-height: 200px;
+}
+.modeldiv {
+    position: absolute;   
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    text-align: center;
+}
+.relocdiv {
+    position: absolute;   
+    top: 20px;
+    right: 0;
+    background-color:yellow;
+    border:3px solid;
+    cursor:default;
+}
+
+</style>
+</head>
+<body>
+<div></div>
+<div id="mdiv" class="modeldiv" onclick="closeModel()">点击一次鼠标以确定网页基准位置，移动浏览器窗口或调整浏览器窗口大小后基准将失效</div>
+<script>
+window.bodyOffsetLeft = 0;
+window.bodyOffsetTop = 0;
+
+function getMousePostoScreen(event) {
+    var e = event || window.event;
+    return {'x':e.screenX,'y':e.screenY}
+}
+function getMousePostoBody(event) {
+    var e = event || window.event;
+    return {'x':e.clientX,'y':e.clientY}
+}
+function closeModel() {
+    var e = window.event || arguments.callee.caller.arguments[0];
+    var mouseToScreen =  getMousePostoScreen(e);
+    var mouseToBody =  getMousePostoBody(e);
+    window.bodyOffsetLeft = mouseToScreen.x - mouseToBody.x;
+    window.bodyOffsetTop = mouseToScreen.y - mouseToBody.y;
+    document.getElementById('mdiv').style.display = 'none';
+}
+</script>
+
+<div id="relocdiv" class="relocdiv" onclick="reloc()">点我重新定位基准</div>
+
+<script>
+function reloc() {
+    var e = window.event || arguments.callee.caller.arguments[0];
+    var mouseToScreen =  getMousePostoScreen(e);
+    var mouseToBody =  getMousePostoBody(e);
+    window.bodyOffsetLeft = mouseToScreen.x - mouseToBody.x;
+    window.bodyOffsetTop = mouseToScreen.y - mouseToBody.y;
+}
+</script>
+
+<div id="drag" class="dragdiv" style="left: 200px; top: 100px;">拖动我</div>
+
+<script>
+var posX;
+var posY;
+dragDiv = document.getElementById("drag");
+dragDiv.onmousedown = function(e) {
+    posX = event.x - dragDiv.offsetLeft; //获得横坐标x
+    posY = event.y - dragDiv.offsetTop; //获得纵坐标y
+    document.onmousemove = mousemove; //调用函数，只要一直按着按钮就能一直调用
+}
+document.onmouseup = function() {
+    document.onmousemove = null; //鼠标举起，停止
+}
+function mousemove(ev) {
+    if (ev == null) ev = window.event; //IE
+    dragDiv.style.left = (ev.clientX - posX) + "px";
+    dragDiv.style.top = (ev.clientY - posY) + "px";
+}
+</script>
+
+<div id="info">
+    <p>网页相对屏幕基准坐标：<span id="body-x"></span><span>, </span><span id="body-y"></span></p>
+    <p>元素相对该网页坐标：<span id="e-page-x"></span><span>, </span><span id="e-page-y"></span></p>
+    <p>元素相对屏幕坐标：<span id="e-screen-x"></span><span>, </span><span id="e-screen-y"></span></p>
+</div>
+
+<script>
+function updateInfo() {
+    var dragDiv = document.getElementById("drag");
+    var body_x = window.bodyOffsetLeft;
+    var body_y = window.bodyOffsetTop;
+    var e_page_x = dragDiv.offsetLeft;
+    var e_page_y = dragDiv.offsetTop;
+    var e_screen_x = dragDiv.offsetLeft + window.bodyOffsetLeft;
+    var e_screen_y = dragDiv.offsetTop + window.bodyOffsetTop;
+    document.getElementById("body-x").textContent = body_x;
+    document.getElementById("body-y").textContent = body_y;
+    document.getElementById("e-page-x").textContent = e_page_x;
+    document.getElementById("e-page-y").textContent = e_page_y;
+    document.getElementById("e-screen-x").textContent = e_screen_x;
+    document.getElementById("e-screen-y").textContent = e_screen_y;
+}
+
+setInterval("updateInfo()",200);
+</script>
+
+</body></html>
